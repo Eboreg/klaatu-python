@@ -9,3 +9,14 @@ python3 -m venv .venv
 source .venv/bin/activate
 pip install -e .[dev]
 ```
+
+## Inclusion in projects
+
+In `pyproject.toml`:
+```
+[project]
+dependencies = [
+    "groplay_python @ git+ssh://git@gitlab.groplay.com/groplay/groplay-python.git",
+    ...
+]
+```
