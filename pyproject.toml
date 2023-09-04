@@ -1,0 +1,54 @@
+[build-system]
+build-backend = "setuptools.build_meta"
+requires = ["setuptools"]
+
+[project]
+name = "groplay-python"
+requires-python = ">=3.7"
+dynamic = ["version"]
+
+[project.optional-dependencies]
+dev = [
+    "ipython",
+    "ipdb",
+    "isort",
+    "pylint",
+]
+
+[tool.setuptools.dynamic]
+version = {attr = "groplay_python.__version__"}
+
+[tool.isort]
+combine_as_imports = true
+default_section = "THIRDPARTY"
+include_trailing_comma = true
+known_self = "groplay_python"
+line_length = 119
+lines_after_imports = 2
+multi_line_output = 3
+sections = ["FUTURE", "STDLIB", "THIRDPARTY", "FIRSTPARTY", "SELF", "LOCALFOLDER"]
+skip = [".venv"]
+
+[tool.pylint.main]
+disable = [
+    "broad-exception-caught",
+    "invalid-name",
+    "missing-class-docstring",
+    "missing-function-docstring",
+    "missing-module-docstring",
+    "too-many-arguments",
+    "unnecessary-lambda-assignment",
+    "unspecified-encoding",
+]
+ignore = [".venv", ".git", "__pycache__"]
+max-line-length = 119
+
+[tool.mypy]
+check_untyped_defs = true
+files = "groplay_python"
+ignore_missing_imports = true
+show_error_codes = true
+
+[tool.flake8]
+max-line-length = 119
+max-doc-length = 79
