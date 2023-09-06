@@ -1,7 +1,7 @@
 import re
 from datetime import date, timedelta
 from math import ceil, floor, log10
-from typing import Any, Callable, Iterable, Iterator, Sequence, SupportsFloat, TypeVar
+from typing import Any, Callable, Iterable, Iterator, Sequence, TypeVar
 from urllib.parse import parse_qs, urlencode, urlsplit, urlunsplit
 
 
@@ -33,12 +33,12 @@ def can_coerce_to_int(value: Any) -> bool:
     return to_int(value) is not None
 
 
-def circulate(lst: list | tuple, rounds: int) -> list:
+def circulate(lst: Iterable[_T], rounds: int) -> list[_T]:
     """
     Shifts `lst` left `rounds` times. Good for e.g. circulating colours in
     a graph.
     """
-    if isinstance(lst, tuple):
+    if not isinstance(lst, list):
         lst = list(lst)
     if lst and rounds:
         for _ in range(rounds):
@@ -48,6 +48,10 @@ def circulate(lst: list | tuple, rounds: int) -> list:
 
 
 def daterange(start_date: date, end_date: date) -> Iterator[date]:
+    """
+    Iterates the dates between `start_date` (inclusive) and `end_date`
+    (exclusive).
+    """
     for n in range(int((end_date - start_date).days)):
         yield start_date + timedelta(days=n)
 
@@ -70,17 +74,19 @@ def getitem_nullable(seq: Iterable[_T], idx: int, cond: Callable[[_T], bool] | N
     # second_even == None
     """
     try:
-        if cond is not None:
-            return [item for item in seq if cond(item)][idx]
-        else:
+        if cond is None:
             return list(seq)[idx]
+        return [item for item in seq if cond(item)][idx]
     except IndexError:
         return None
 
 
 def getitem0(seq: Iterable[_T], cond: Callable[[_T], bool] | None = None) -> _T:
+    """
+    @raises IndexError
+    """
     if cond is None:
-        cond = lambda _: True  # noqa
+        return list(seq)[0]
     return [item for item in seq if cond(item)][0]
 
 
@@ -93,7 +99,7 @@ def group_by(sequence: Sequence[_T], pred: Callable[[_T], Any]) -> dict[Any, lis
     Groups `sequence` by the result of `pred` on each item. Returns dict with
     those results as keys and sublists of `sequence` as values.
     """
-    result = {}
+    result: dict[Any, list[_T]] = {}
     for item in sequence:
         key = pred(item)
         if key not in result:
@@ -114,16 +120,20 @@ def index_of_first(sequence: Sequence[_T], pred: Callable[[_T], bool]) -> int:
         return -1
 
 
-def int_to_string(value: int | None, language: str, nbsp: bool = False) -> str:
-    # Format integer with correct thousand separators
+def int_to_string(value: int | None, locale: str, nbsp: bool = False) -> str:
+    """
+    Formats an integer with locale-specific thousand separators, which are at
+    least correct for Swedish and English locales. (Usage of the functions in
+    the built-in `locale` package requires you to run setlocale() multiple
+    times, which is not thread safe and may be resource heavy, so we don't do
+    that.)
+    """
     if value is None:
         return ""
-    if language == "sv":
-        # We probably should be checking for locale rather than language, but
-        # whatever
+    if locale.lower().startswith("sv"):
         separator = " "
     else:
-        separator = "."
+        separator = ","
     if separator == " " and nbsp:
         separator = "&nbsp;"
     # Neat line of code, huh? :)
@@ -169,16 +179,15 @@ def percent_rounded(part: int | float, whole: int | float) -> int:
     return round(part / whole * 100)
 
 
-def round_to_n(x: int | float, n: int) -> SupportsFloat:
+def round_to_n(x: int | float, n: int) -> int | float:
     """
-    Rounds x to n significant digits, except if the result is a whole number
-    it is cast to int
+    Rounds x to n significant digits. If the result is a whole number, it is
+    cast to int, otherwise float is returned.
     """
     if x == 0:
         return x
-    else:
-        result = round(x, -int(floor(log10(abs(x)))) + (n - 1))
-        return int(result) if not result % 1 else result
+    result = round(x, -int(floor(log10(abs(x)))) + (n - 1))
+    return int(result) if not result % 1 else result
 
 
 def round_up_timedelta(td: timedelta) -> timedelta:
@@ -194,17 +203,19 @@ def round_up_timedelta(td: timedelta) -> timedelta:
     return timedelta(minutes=10)
 
 
-def rounded_percentage(part: int | float, whole: int | float) -> SupportsFloat:
-    """Percentage rounded to 3 significant digits"""
-    return round_to_n((part / whole) * 100, 3) if whole != 0 else 0
+def rounded_percentage(part: int | float, whole: int | float, digits=3) -> int | float:
+    """Percentage rounded to `digits` significant digits."""
+    return round_to_n((part / whole) * 100, digits) if whole != 0 else 0
 
 
 def strip_url_query(url: str) -> str:
+    """Just returns `url` stripped of any GET parameters."""
     parts = urlsplit(url)
     return urlunsplit((parts.scheme, parts.netloc, parts.path, '', parts.fragment))
 
 
 def to_int(value: Any, default: int | None = None) -> int | None:
+    """Like int() but returns a default value instead of raising exception."""
     try:
         return int(value)
     except (ValueError, TypeError):
