@@ -16,7 +16,7 @@ In `pyproject.toml`:
 ```
 [project]
 dependencies = [
-    "groplay_python @ git+ssh://git@gitlab.groplay.com/groplay/groplay-python.git",
+    "groplay_python @ git+ssh://git@github.com/Eboreg/groplay-python.git",
     ...
 ]
 ```
