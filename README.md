@@ -1,4 +1,4 @@
-# groplay-python
+# klaatu-python
 
 A bunch of more or less useful Python utils without any 3rd party dependencies.
 
@@ -16,7 +16,7 @@ In `pyproject.toml`:
 ```
 [project]
 dependencies = [
-    "groplay_python @ git+ssh://git@github.com/Eboreg/groplay-python.git",
+    "klaatu_python @ git+https://git@github.com/Eboreg/klaatu-python.git",
     ...
 ]
 ```
