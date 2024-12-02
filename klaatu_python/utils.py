@@ -1,7 +1,7 @@
 import re
 from datetime import date, timedelta
 from math import ceil, floor, log10
-from typing import Any, Callable, Iterable, Iterator, Sequence, TypeVar
+from typing import Any, Callable, Iterable, Iterator, Literal, Sequence, TypeVar, overload
 from urllib.parse import parse_qs, urlencode, urlsplit, urlunsplit
 
 
@@ -81,17 +81,30 @@ def getitem_nullable(seq: Iterable[_T], idx: int, cond: Callable[[_T], bool] | N
         return None
 
 
-def getitem0(seq: Iterable[_T], cond: Callable[[_T], bool] | None = None) -> _T:
+@overload
+def getitem0(seq: Iterable[_T], cond: Callable[[_T], bool] | None, nullable: Literal[False]) -> _T: ...
+
+
+@overload
+def getitem0(seq: Iterable[_T], cond: Callable[[_T], bool] | None, nullable: Literal[True]) -> _T | None: ...
+
+
+def getitem0(seq, cond=None, nullable=False):
     """
     @raises IndexError
     """
-    if cond is None:
-        return list(seq)[0]
-    return [item for item in seq if cond(item)][0]
+    try:
+        if cond is None:
+            return list(seq)[0]
+        return [item for item in seq if cond(item)][0]
+    except IndexError as e:
+        if nullable:
+            return None
+        raise e
 
 
 def getitem0_nullable(seq: Iterable[_T], cond: Callable[[_T], bool] | None = None) -> _T | None:
-    return getitem_nullable(seq, 0, cond)
+    return getitem0(seq, cond, True)
 
 
 def group_by(sequence: Sequence[_T], pred: Callable[[_T], Any]) -> dict[Any, list[_T]]:
