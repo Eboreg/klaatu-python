@@ -6,6 +6,7 @@ from urllib.parse import parse_qs, urlencode, urlsplit, urlunsplit
 
 
 _T = TypeVar("_T")
+_NT = TypeVar("_NT", int, float)
 
 
 def append_query_to_url(url: str, params: dict, conditional_params: dict | None = None, safe: str = '') -> str:
@@ -47,6 +48,14 @@ def circulate(lst: Iterable[_T], rounds: int) -> list[_T]:
     return lst
 
 
+def coerce_between(value: _NT, min_value: _NT, max_value: _NT) -> _NT:
+    if value < min_value:
+        return min_value
+    if value > max_value:
+        return max_value
+    return value
+
+
 def daterange(start_date: date, end_date: date) -> Iterator[date]:
     """
     Iterates the dates between `start_date` (inclusive) and `end_date`
@@ -54,6 +63,10 @@ def daterange(start_date: date, end_date: date) -> Iterator[date]:
     """
     for n in range(int((end_date - start_date).days)):
         yield start_date + timedelta(days=n)
+
+
+def filter_values_not_null(d: dict) -> dict:
+    return {k: v for k, v in d.items() if v is not None}
 
 
 def getitem_nullable(seq: Iterable[_T], idx: int, cond: Callable[[_T], bool] | None = None) -> _T | None:
@@ -120,6 +133,47 @@ def group_by(sequence: Sequence[_T], pred: Callable[[_T], Any]) -> dict[Any, lis
         else:
             result[key].append(item)
     return result
+
+
+def group_dicts(
+    dicts: Iterable[dict[str, _T]],
+    keys: list[str],
+    data_key: str = "data",
+) -> list[dict[str, _T | list[dict[str, _T]]]]:
+    """
+    In:
+        dicts = [
+            {"slug": "musikensmakt", "name": "Musikens Makt", "date": "2025-04-01", "count": 60},
+            {"slug": "musikensmakt", "name": "Musikens Makt", "date": "2025-04-02", "count": 64},
+            {"slug": "apanap", "name": "Apan Ap", "date": "2025-04-01", "count": 2},
+        ]
+        keys = ["slug", "name"]
+        data_key = "dätä"
+    Out: [
+        {
+            "slug": "musikensmakt",
+            "name": "Musikens Makt",
+            "dätä": [{"date": "2025-04-01", "count": 60}, {"date": "2025-04-02", "count": 64}],
+        },
+        {
+            "slug": "apanap",
+            "name": "Apan Ap",
+            "dätä": [{"date": "2025-04-01", "count": 2}],
+        },
+    ]
+    """
+    result: dict[tuple[_T, ...], list] = {}
+
+    for d in dicts:
+        dd = d.copy()
+        d_key = tuple(d[key] for key in keys)
+        if d_key not in result:
+            result[d_key] = []
+        for key in keys:
+            del dd[key]
+        result[d_key].append(dd)
+
+    return [{data_key: v, **{keys[i]: k[i] for i in range(len(keys))}} for k, v in result.items()]
 
 
 def index_of_first(sequence: Sequence[_T], pred: Callable[[_T], bool]) -> int:
