@@ -16,7 +16,7 @@ In `pyproject.toml`:
 ```
 [project]
 dependencies = [
-    "klaatu_python @ git+https://git@github.com/Eboreg/klaatu-python.git",
+    "klaatu-python",
     ...
 ]
 ```
