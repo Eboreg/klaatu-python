@@ -3,15 +3,15 @@ build-backend = "setuptools.build_meta"
 requires = ["setuptools"]
 
 [project]
-name = "klaatu-python"
-requires-python = ">=3.7"
-dynamic = ["version"]
 authors = [
     {name = "Robert Huselius", email = "robert@huseli.us"},
 ]
 license = "GPL-3.0-only"
 license-files = ["LICENSE"]
+name = "klaatu-python"
 readme = "README.md"
+requires-python = ">=3.7"
+version = "2.3.0"
 
 [project.optional-dependencies]
 dev = [
@@ -23,11 +23,8 @@ dev = [
 
 [project.urls]
 Homepage = "https://github.com/Eboreg/klaatu-python"
-Source = "https://github.com/Eboreg/klaatu-python"
 Issues = "https://github.com/Eboreg/klaatu-python/issues"
-
-[tool.setuptools.dynamic]
-version = {attr = "klaatu_python.__version__"}
+Source = "https://github.com/Eboreg/klaatu-python"
 
 [tool.isort]
 combine_as_imports = true
@@ -61,5 +58,5 @@ ignore_missing_imports = true
 show_error_codes = true
 
 [tool.flake8]
-max-line-length = 119
 max-doc-length = 79
+max-line-length = 119

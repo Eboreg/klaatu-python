@@ -1,5 +1,6 @@
 import re
 from datetime import date, timedelta
+from locale import format_string, localeconv
 from math import ceil, floor, log10
 from typing import Any, Callable, Iterable, Iterator, Literal, Sequence, TypeVar, overload
 from urllib.parse import parse_qs, urlencode, urlsplit, urlunsplit
@@ -67,6 +68,20 @@ def daterange(start_date: date, end_date: date) -> Iterator[date]:
 
 def filter_values_not_null(d: dict) -> dict:
     return {k: v for k, v in d.items() if v is not None}
+
+
+def first_not_null(*values: _T | None) -> _T:
+    ret = first_not_null_or_null(*values)
+    if ret is None:
+        raise TypeError("All values are None")
+    return ret
+
+
+def first_not_null_or_null(*values: _T | None) -> _T | None:
+    for value in values:
+        if value is not None:
+            return value
+    return None
 
 
 def getitem_nullable(seq: Iterable[_T], idx: int, cond: Callable[[_T], bool] | None = None) -> _T | None:
@@ -225,6 +240,35 @@ def is_truthy(value: Any) -> bool:
     if isinstance(value, str) and value.lower() in ("false", "no", "0"):
         return False
     return bool(value)
+
+
+def localize_float(
+    value: float,
+    grouping: bool = True,
+    min_decimals: int | None = None,
+    max_decimals: int | None = None,
+) -> str:
+    if max_decimals is None:
+        max_decimals = 15
+
+    if min_decimals is not None and min_decimals > max_decimals:
+        raise ValueError("min_decimals must be <= max_decimals")
+    if 15 < (min_decimals or 0) < 0:
+        raise ValueError("min_decimals must be >= 0 and <= 15")
+    if 15 < (max_decimals or 0) < 0:
+        raise ValueError("max_decimals must be >= 0 and <= 15")
+
+    decimal_separator = localeconv()["decimal_point"]
+    ret = format_string("%.*f", (max_decimals, value), grouping=grouping)
+
+    if decimal_separator in ret:
+        base, decimals = ret.split(decimal_separator)
+        decimals = decimals.rstrip("0").ljust(min_decimals or 0, "0")
+        if not decimals:
+            return base
+        return base + decimal_separator + decimals
+
+    return ret
 
 
 def nonulls(items: Iterable[_T | None]) -> list[_T]:
