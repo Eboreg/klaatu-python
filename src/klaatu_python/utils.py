@@ -1,16 +1,20 @@
+import itertools
 import re
+from collections.abc import Callable, Hashable, Iterable, Iterator, Sequence
 from datetime import date, timedelta
 from locale import format_string, localeconv
 from math import ceil, floor, log10
-from typing import Any, Callable, Iterable, Iterator, Literal, Sequence, TypeVar, overload
+from pathlib import Path
+from typing import Any, Literal, TypeVar, overload
 from urllib.parse import parse_qs, urlencode, urlsplit, urlunsplit
 
 
 _T = TypeVar("_T")
 _NT = TypeVar("_NT", int, float)
+_HashableT = TypeVar("_HashableT", bound=Hashable)
 
 
-def append_query_to_url(url: str, params: dict, conditional_params: dict | None = None, safe: str = '') -> str:
+def append_query_to_url(url: str, params: dict, conditional_params: dict | None = None, safe: str = "") -> str:
     """
     Adds GET query from `params` to `url`, or appends it if there already is
     one.
@@ -64,6 +68,31 @@ def daterange(start_date: date, end_date: date) -> Iterator[date]:
     """
     for n in range(int((end_date - start_date).days)):
         yield start_date + timedelta(days=n)
+
+
+def deepest_common_path(path1: Path, *paths: Path) -> Path:
+    """
+    Finds and returns the deepest (as in "deep in the directory structure")
+    path that all parameters have in common.
+
+    Example:
+    >>> deepest_common_path(Path("/usr/local/bin/"), Path("/usr/share/"))
+    PosixPath('/usr')
+    """
+    path1 = path1.resolve()
+    paths = tuple(p.resolve() for p in paths)
+
+    # Returned iterator will contain None unless all paths are identical:
+    if all(itertools.accumulate([path1, *paths], lambda p1, p2: p1 if p1 == p2 else None)):
+        return path1
+
+    paths_parts = [[p, *p.parents] for p in paths]
+
+    for part in [path1, *path1.parents]:
+        if all(part in parts for parts in paths_parts):
+            return part
+
+    raise ValueError("No common paths")
 
 
 def filter_values_not_null(d: dict) -> dict:
@@ -226,9 +255,8 @@ def int_to_string(value: int | None, locale: str, nbsp: bool = False) -> str:
     # 5. Re-reverse the digits in each group & join them with separator string
     # 6. Re-reverse the order of the groups
     # 7. Add minus sign if value was negative
-    return (
-        ("-" if value < 0 else "") +
-        separator.join([v[::-1] for v in re.split(r"(\d{3})", str(abs(value))[::-1]) if v][::-1])
+    return ("-" if value < 0 else "") + separator.join(
+        [v[::-1] for v in re.split(r"(\d{3})", str(abs(value))[::-1]) if v][::-1]
     )
 
 
@@ -271,6 +299,27 @@ def localize_float(
     return ret
 
 
+def most_common(values: Iterable[_HashableT]) -> tuple[_HashableT | None, int]:
+    """
+    Given a non-empty iterable, this will return a 2-tuple with the most
+    commonly occurring value in said iterable, and the number of such
+    occurances.
+
+    Given an _empty_ iterable, it will return `(None, 0)`.
+    """
+    occurrences: dict[_HashableT, int] = {}
+
+    for value in values:
+        if value not in occurrences:
+            occurrences[value] = 0
+        occurrences[value] += 1
+
+    if not occurrences:
+        return None, 0
+
+    return max(occurrences.items(), key=lambda tup: tup[1])
+
+
 def nonulls(items: Iterable[_T | None]) -> list[_T]:
     """Just filters away None values from `items`."""
     return [item for item in items if item is not None]
@@ -280,7 +329,7 @@ def partition(items: Sequence[_T], length: int) -> Iterator[Sequence[_T]]:
     """Simply splits `items` into subsequences of max `length` items."""
     offset = 0
     while offset == 0 or offset < len(items):
-        yield items[offset:offset + length]
+        yield items[offset : offset + length]
         offset += length
 
 
@@ -288,6 +337,37 @@ def percent_rounded(part: int | float, whole: int | float) -> int:
     if not whole:
         return 0
     return round(part / whole * 100)
+
+
+def roman(n: int):
+    if n % 1:
+        raise ValueError("roman(): fractions not allowed")
+    if n >= 4000 or n < 0:
+        raise ValueError("roman(): value must be >= 0 and < 4000")
+
+    m = {
+        1000: "M",
+        900: "CM",
+        500: "D",
+        400: "CD",
+        100: "C",
+        90: "XC",
+        50: "L",
+        40: "XL",
+        10: "X",
+        9: "IX",
+        5: "V",
+        4: "IV",
+        1: "I",
+    }
+    r = ""
+
+    for k, v in m.items():
+        while n >= k:
+            r += v
+            n -= k
+
+    return r
 
 
 def round_to_n(x: int | float, n: int) -> int | float:
@@ -322,7 +402,7 @@ def rounded_percentage(part: int | float, whole: int | float, digits=3) -> int |
 def strip_url_query(url: str) -> str:
     """Just returns `url` stripped of any GET parameters."""
     parts = urlsplit(url)
-    return urlunsplit((parts.scheme, parts.netloc, parts.path, '', parts.fragment))
+    return urlunsplit((parts.scheme, parts.netloc, parts.path, "", parts.fragment))
 
 
 def to_int(value: Any, default: int | None = None) -> int | None:
@@ -341,7 +421,7 @@ def zip_dicts(*dicts: dict) -> dict:
     return {k: v for d in dicts for k, v in d.items()}
 
 
-def zip_dict_lists(dict_lists: Sequence[Sequence[dict]]) -> Iterator[dict]:
+def zip_dict_lists(dict_lists: Sequence[Sequence[dict]], strict: bool = False) -> Iterator[dict]:
     """
     Zips a list of dict lists and combines them into single dicts.
     I.e. given dict_lists = [
@@ -352,5 +432,5 @@ def zip_dict_lists(dict_lists: Sequence[Sequence[dict]]) -> Iterator[dict]:
     {a1: 1, a2: 2, a3: 5, a4: 6}
     {b1: 3, b2: 4, b3: 7, b4: 8}
     """
-    for dicts in zip(*dict_lists):
+    for dicts in zip(*dict_lists, strict=strict):
         yield zip_dicts(*dicts)

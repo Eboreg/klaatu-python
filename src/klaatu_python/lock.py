@@ -2,12 +2,12 @@ import functools
 import os
 
 
-class LockException(Exception):
-    ...
+class LockException(Exception): ...
 
 
 class Lock:
     """Does the same as `lock`, but as a context manager."""
+
     def __init__(self, lockfile: str):
         self.lockfile = lockfile
 
@@ -26,6 +26,7 @@ class Lock:
 
 def lock(lockfile: str):
     """Primitive mechanism to avoid concurrent execution of a function."""
+
     def decorator(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
@@ -44,5 +45,7 @@ def lock(lockfile: str):
                 remote_attempts += 1
 
             return result
+
         return wrapper
+
     return decorator

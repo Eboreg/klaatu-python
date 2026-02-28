@@ -5,19 +5,19 @@ from abc import abstractmethod
 class CaseType:
     @staticmethod
     @abstractmethod
-    def split(value: str) -> list[str]:
-        ...
+    def split(value: str) -> list[str]: ...
 
     @staticmethod
     @abstractmethod
-    def join(parts: list[str]) -> str:
-        ...
+    def join(parts: list[str]) -> str: ...
 
 
 class CamelCase(CaseType):
+    """camelCase"""
+
     @staticmethod
     def split(value: str) -> list[str]:
-        return [m.group() for m in re.finditer(r"(^[a-z]*)|([A-Z][a-z]*)", value)]
+        return [m.group() for m in re.finditer(r"(^[a-z]+)|([A-Z][a-z]*)", value)]
 
     @staticmethod
     def join(parts: list[str]) -> str:
@@ -27,6 +27,8 @@ class CamelCase(CaseType):
 
 
 class ConstantCase(CaseType):
+    """CONSTANT_CASE"""
+
     @staticmethod
     def split(value: str) -> list[str]:
         return value.split("_")
@@ -37,6 +39,8 @@ class ConstantCase(CaseType):
 
 
 class KebabCase(CaseType):
+    """kebab-case"""
+
     @staticmethod
     def split(value: str) -> list[str]:
         return value.split("-")
@@ -47,9 +51,11 @@ class KebabCase(CaseType):
 
 
 class PascalCase(CaseType):
+    """PascalCase"""
+
     @staticmethod
     def split(value: str) -> list[str]:
-        return [m.group() for m in re.finditer(r"(^[a-z]*)|([A-Z][a-z]*)", value)]
+        return [m.group() for m in re.finditer(r"(^[a-z]+)|([A-Z][a-z]*)", value)]
 
     @staticmethod
     def join(parts: list[str]) -> str:
@@ -57,6 +63,8 @@ class PascalCase(CaseType):
 
 
 class SnakeCase(CaseType):
+    """snake_case"""
+
     @staticmethod
     def split(value: str) -> list[str]:
         return value.split("_")
