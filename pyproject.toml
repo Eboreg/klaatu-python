@@ -11,7 +11,7 @@ license-files = ["LICENSE"]
 name = "klaatu-python"
 readme = "README.md"
 requires-python = ">=3.10"
-version = "2.4.0"
+version = "2.5.0"
 
 [project.urls]
 Homepage = "https://github.com/Eboreg/klaatu-python"
@@ -41,7 +41,3 @@ section-order = [
 
 [tool.ruff.format]
 skip-magic-trailing-comma = false
-
-[tool.flake8]
-max-doc-length = 79
-max-line-length = 119

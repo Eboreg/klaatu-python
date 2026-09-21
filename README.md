@@ -1,6 +1,6 @@
 # klaatu-python
 
-A bunch of more or less useful Python utils without any 3rd party dependencies.
+A bunch of more or less useful Python utils without _any_ 3rd party dependencies.
 
 ## Development install
 

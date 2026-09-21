@@ -1,8 +1,8 @@
 import re
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 
 
-class CaseType:
+class CaseType(ABC):
     @staticmethod
     @abstractmethod
     def split(value: str) -> list[str]: ...
