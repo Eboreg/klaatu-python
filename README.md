@@ -1,6 +1,6 @@
 # klaatu-python
 
-<img width="400" alt="thisprojectwascodedbyahumanbeing-wordart" src="https://github.com/user-attachments/assets/2e36f279-91d9-4f65-9c8f-fd8e6b179f7a" />
+<img width="500" alt="thisprojectwascodedbyahumanbeing-wordart" src="https://github.com/user-attachments/assets/83071cfd-5aec-4a4d-897d-8aa4a933fa31" />
 
 A bunch of more or less useful Python utils without _any_ 3rd party dependencies.
 
