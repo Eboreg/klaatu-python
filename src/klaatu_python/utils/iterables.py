@@ -128,3 +128,12 @@ def partition(items: Sequence[_T], length: int) -> Iterator[Sequence[_T]]:
     while offset == 0 or offset < len(items):
         yield items[offset : offset + length]
         offset += length
+
+
+def seq_contains_seq(container: Sequence, containee: Sequence) -> bool:
+    if len(containee) > len(container):
+        return False
+    for idx in range(len(container) - len(containee) + 1):
+        if container[idx : idx + len(containee)] == containee:
+            return True
+    return False
