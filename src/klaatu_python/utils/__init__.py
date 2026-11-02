@@ -1,6 +1,7 @@
 from .dicts import filter_values_not_null, group_by, group_dicts, zip_dict_lists, zip_dicts
 from .iterables import (
     circulate,
+    count_distinct,
     first_not_null,
     first_not_null_or_null,
     getitem0,
@@ -10,6 +11,7 @@ from .iterables import (
     most_common,
     nonulls,
     partition,
+    seq_contains_seq,
 )
 from .numbers import (
     can_coerce_to_int,
@@ -25,7 +27,7 @@ from .numbers import (
 )
 from .paths import deepest_common_path, sanitize_path
 from .strings import fancy_join
-from .time import daterange, round_up_timedelta
+from .time import date_to_timestamp_ms, daterange, round_to_whole_hour, round_up_timedelta
 from .urls import append_query_to_url, strip_url_query
 from .various import get_binary_reply, is_truthy
 
@@ -35,6 +37,8 @@ __all__ = [
     "can_coerce_to_int",
     "circulate",
     "coerce_between",
+    "count_distinct",
+    "date_to_timestamp_ms",
     "daterange",
     "deepest_common_path",
     "fancy_join",
@@ -58,9 +62,11 @@ __all__ = [
     "percent_rounded",
     "roman",
     "round_to_n",
+    "round_to_whole_hour",
     "round_up_timedelta",
     "rounded_percentage",
     "sanitize_path",
+    "seq_contains_seq",
     "strip_url_query",
     "to_int",
     "zip_dict_lists",

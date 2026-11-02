@@ -20,6 +20,21 @@ def circulate(lst: Iterable[_T], rounds: int) -> list[_T]:
     return lst
 
 
+def count_distinct(values: Iterable[_HashableT]) -> dict[_HashableT, int]:
+    """
+    Returns a dict where the keys are distinct values from `values`, and the
+    values are the number of occurances of each value.
+    """
+    occurrences: dict[_HashableT, int] = {}
+
+    for value in values:
+        if value not in occurrences:
+            occurrences[value] = 0
+        occurrences[value] += 1
+
+    return occurrences
+
+
 def first_not_null(*values: _T | None) -> _T:
     ret = first_not_null_or_null(*values)
     if ret is None:
@@ -104,12 +119,7 @@ def most_common(values: Iterable[_HashableT]) -> tuple[_HashableT | None, int]:
 
     Given an _empty_ iterable, it will return `(None, 0)`.
     """
-    occurrences: dict[_HashableT, int] = {}
-
-    for value in values:
-        if value not in occurrences:
-            occurrences[value] = 0
-        occurrences[value] += 1
+    occurrences = count_distinct(values)
 
     if not occurrences:
         return None, 0
